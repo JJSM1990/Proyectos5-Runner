@@ -13,6 +13,7 @@ public class Acorn : MovingPiece, IPickable
 
     public void PickUp()
     {
+        GameObject.Find("GameManager").GetComponent<GameManager>().AcornPickUp();
         Destroy(this.gameObject);
     }
 }
