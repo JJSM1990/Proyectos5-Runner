@@ -11,6 +11,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float              m_fallingSpeed;
     private float                               m_verticalVelocity;
 
+    [SerializeField] private Animator           m_anim;
+
     private float                               m_playerHorizontalInput;
     private bool                                m_playerVerticalInput;
 
@@ -63,6 +65,8 @@ public class PlayerMovement : MonoBehaviour
     public void IsGrounded(bool isGrounded)
     {
         m_isGrounded = isGrounded;
+        m_anim.SetBool("Grounded", isGrounded);
+
     }
     public void CheckTouchingRight(bool touching)
     {

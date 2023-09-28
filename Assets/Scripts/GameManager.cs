@@ -19,7 +19,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float                      m_initialSpeed = 0f;
 
 
-    private float                                       m_acornCounter = 0f;
+    static private float                                m_acornCounter = 0f;
     private float                                       m_speedCounter = 0f;
     [SerializeField] private float                      m_acornsToMaxSpeed;
     public float                                        m_spawnCallTime;
