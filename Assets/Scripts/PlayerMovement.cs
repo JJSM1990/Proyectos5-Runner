@@ -4,57 +4,89 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    //Components
     [SerializeField] private GameObject         m_model;
-
-    [SerializeField] private float              m_playerHorizontalSpeed;
-    [SerializeField] private float              m_jumpingSpeed;
-    [SerializeField] private float              m_fallingSpeed;
-    private float                               m_verticalVelocity;
-
     [SerializeField] private Animator           m_anim;
 
-    private float                               m_playerHorizontalInput;
-    private bool                                m_playerVerticalInput;
+    //Movement variables
+    [SerializeField] private float              _playerHorizontalSpeed;
+    [SerializeField] private float              _jumpingSpeed;
+    [SerializeField] private float              _fallingAcceleration;
+    [SerializeField] private float              _dropSpeed;
+    [SerializeField] private float              _slideDuration;
+    private bool                                _sliding = false;
+    private float                               _verticalVelocity;
 
-    private bool                                m_touchingRight;
-    private bool                                m_touchingLeft;
-    private bool                                m_isGrounded    =   false;
+    
+    //Player inputs
+    private float                               _playerHorizontalInput;
+
+    //Players collisions from PlayerHitboxes
+    private bool                                _touchingRight;
+    private bool                                _touchingLeft;
+    private bool                                _isGrounded    =   false;
+
+    private Coroutine _slidingCoroutine;
 
     [SerializeField] private BoxCollider        m_boxCollider;
      
     // Update is called once per frame
     void Update()
     {
-        m_playerHorizontalInput = -Input.GetAxis("Horizontal");
+        CapturePlayerHorizontalInput(_sliding);
         CheckIfTouchingLimits();
         CalculateVerticalVelocity();
-        m_model.transform.position=m_model.transform.position + new Vector3(m_playerHorizontalInput*Time.deltaTime*m_playerHorizontalSpeed,m_verticalVelocity* Time.deltaTime, 0);
+        m_model.transform.position=m_model.transform.position + new Vector3(_playerHorizontalInput*Time.deltaTime*_playerHorizontalSpeed,_verticalVelocity* Time.deltaTime, 0);
+    }
+
+    private void CapturePlayerHorizontalInput(bool isSliding)
+    {
+        if (isSliding)
+        {
+            _playerHorizontalInput = 0;
+        }
+        else
+        {
+            _playerHorizontalInput = -Input.GetAxis("Horizontal");
+        }
     }
 
     private void CheckIfTouchingLimits()
     {
-        if (m_touchingRight)
+        if (_touchingRight)
         {
-            m_playerHorizontalInput=Mathf.Clamp(m_playerHorizontalInput, 0, 1);
-        } else if (m_touchingLeft)
+            _playerHorizontalInput=Mathf.Clamp(_playerHorizontalInput, 0, 1);
+        } else if (_touchingLeft)
         {
-            m_playerHorizontalInput = Mathf.Clamp(m_playerHorizontalInput, -1, 0);
+            _playerHorizontalInput = Mathf.Clamp(_playerHorizontalInput, -1, 0);
         }
     }
     private void CalculateVerticalVelocity()
     {
-        if (m_isGrounded)
+        if (_isGrounded)
         {
             if(Input.GetKey(KeyCode.W)|| Input.GetKey(KeyCode.Space))
             {
-                m_verticalVelocity = 10f;
+                _verticalVelocity = 10f;
             } else
             {
-                m_verticalVelocity = 0f;
+                _verticalVelocity = 0f;
+                if (Input.GetKeyDown(KeyCode.S))
+                {
+                    _slidingCoroutine=StartCoroutine(Sliding());
+                }
             }
+
+        } else if (Input.GetKeyDown(KeyCode.S))
+        {
+
+            _verticalVelocity= -_dropSpeed;
+            m_anim.SetTrigger("playerDrop");
+
         } else
         {
-            m_verticalVelocity -= m_fallingSpeed*Time.deltaTime;
+
+            _verticalVelocity -= _fallingAcceleration*Time.deltaTime;
         }
     }
 
@@ -64,26 +96,50 @@ public class PlayerMovement : MonoBehaviour
     }
     public void IsGrounded(bool isGrounded)
     {
-        m_isGrounded = isGrounded;
-        m_anim.SetBool("Grounded", isGrounded);
+        _isGrounded = isGrounded;
+        m_anim.SetBool("grounded", isGrounded);
+        if (!isGrounded)
+        {
+            if (_slidingCoroutine != null)
+            {
+                _sliding = false;
+                StopCoroutine(_slidingCoroutine);
+                m_anim.SetTrigger("slideEnd");
+                _slidingCoroutine = null;
+            }
+        }
 
     }
     public void CheckTouchingRight(bool touching)
     {
-        m_touchingRight = touching;
+        _touchingRight = touching;
     }
 
     public void CheckTouchingLeft(bool touching)
     {
-        m_touchingLeft = touching;
+        _touchingLeft = touching;
     }
 
     IEnumerator PlayerHitCoroutine()
     {
         m_boxCollider.enabled= false;
-        m_verticalVelocity = m_jumpingSpeed;
-        m_isGrounded = false;
+        _touchingLeft = _touchingRight = false;
+        _verticalVelocity = _jumpingSpeed*2;
+        _isGrounded = false;
+        m_anim.SetTrigger("playerHit"); 
         yield return new WaitForSeconds(0.5f);
+        m_anim.SetBool("grounded", _isGrounded);
         m_boxCollider.enabled = true;
+    }
+
+    IEnumerator Sliding()
+    {
+        _sliding = true;
+        m_anim.SetTrigger("slideStart");
+        _playerHorizontalInput = 0;
+        yield return new WaitForSeconds(_slideDuration);
+        _sliding = false;
+        m_anim.SetTrigger("slideEnd");
+        _slidingCoroutine = null;
     }
 }

@@ -5,41 +5,43 @@ using TMPro;
 using TMPro.EditorUtilities;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
     //Los objetos iran hacia el jugador, pero realmente el jugador no va avanzar. Para que todos los objetos tenga la misma velocidad
     //no voy a darles velocidades individuales, lo cogeran todos de aqui usando la funcion GetPlayerSpeed().
-    private float                       m_levelSpeed = 0f;
+    private float                       _levelSpeed = 0f;
 
     // Cuanto mas tiempo lleve el jugador jugando, mas rapido ira. m_timeToMaxSpeed determina el tiempo que va a tardar a llegar al maximo. m_MaxPlayerSpeed es el maximo. 
     // Cada vez que el jugador se de un golpe restamos al m_currentTime. Recibirimos un mensaje de DamagingObjects y todo lo que herede de esa clase.
 
-    [SerializeField] private float                      m_MaxLevelSpeed = 0f;
-    [SerializeField] private float                      m_initialSpeed = 0f;
+    [SerializeField] private float                      _MaxLevelSpeed = 0f;
+    [SerializeField] private float                      _initialSpeed = 0f;
 
 
-    static private float                                m_acornCounter = 0f;
-    private float                                       m_speedCounter = 0f;
-    [SerializeField] private float                      m_acornsToMaxSpeed;
-    public float                                        m_spawnCallTime;
-    private float                                       m_spawnExecutionTime;
+    static private float                                _acornCounter = 0f;
+    [SerializeField] private float                      _speedCounter = 0f;
+    [SerializeField] private float                      _acornsToMaxSpeed;
+    [SerializeField] public float                       _spawnCallTime;
+    [SerializeField] private float                      _spawnExecutionTime;
 
-
+    [SerializeField] private MonsterHandsBehaviour      m_handsBehaviour;
     [SerializeField] GameObject                         m_floorSpawner;
     [SerializeField] GameObject                         m_floor;
 
     [SerializeField] GameObject                         m_obstacleSpawnPoint;
     [SerializeField] private GameObject[]               m_obstacles;
-    private Coroutine                                   m_obstacleSpawnCoroutine;
+    private Coroutine                                   _obstacleSpawnCoroutine;
 
 
+    private bool                                        _gameOverEnabled=false;
     //Variables para el UI
     [SerializeField] TextMeshProUGUI                    m_UIcounter;
     void Start()
     {
-        //Incremento la velocidad del jugador en base al tiempo que lleva jugando usando una corutina.
-        StartCoroutine(IncreasePlayerSpeed());
+        _levelSpeed = _initialSpeed;
+        StartCoroutine(BlockGameOver());
     }
 
     void Update()
@@ -51,10 +53,19 @@ public class GameManager : MonoBehaviour
 
     private void SpawnObstacle()
     {
-        if (m_obstacleSpawnCoroutine == null)
+        if (_obstacleSpawnCoroutine == null)
         {
-            m_obstacleSpawnCoroutine = StartCoroutine(ObstacleSpawn());
+            _obstacleSpawnCoroutine = StartCoroutine(ObstacleSpawn());
         }
+    }
+
+    private void UpdatePlayerSpeed()
+    {
+
+        _levelSpeed =  _speedCounter == _acornsToMaxSpeed ?
+            _MaxLevelSpeed:
+            Mathf.Lerp(_initialSpeed, _MaxLevelSpeed, _speedCounter / _acornsToMaxSpeed);
+
     }
 
     // Funciones Publicas
@@ -63,58 +74,59 @@ public class GameManager : MonoBehaviour
     // Los diferentes objetos que se mueven hacia el jugador pediran al gameManager la velocidad a la que iran de aqui.
     public float GetLevelSpeed()
     {
-        return m_levelSpeed;
+        return _levelSpeed;
     }
 
     //Las piezas sueltas del nivel le pediran al GameManager nuevas piezas con esta funcion.
     public void FloorSpawnRequired()
     {
-       
-       GameObject floorPiece=Instantiate(m_floor, m_floorSpawner.transform.position, m_floorSpawner.transform.rotation);
-       m_spawnExecutionTime = Time.time;
-        floorPiece.transform.position += Vector3.forward * (m_spawnExecutionTime - m_spawnCallTime) * m_levelSpeed;
+        GameObject floorPiece=Instantiate(m_floor, m_floorSpawner.transform.position, m_floorSpawner.transform.rotation);
+        floorPiece.GetComponent<MovingPiece>().GetStartSpeed(_levelSpeed);
     }
 
     public void AcornPickUp()
     {
-        m_acornCounter++;
-        m_speedCounter++;
-        m_UIcounter.text = "Acorns: "+m_acornCounter.ToString();
+        _acornCounter++;
+        _speedCounter++;
+        m_UIcounter.text = "Acorns: "+_acornCounter.ToString();
+        UpdatePlayerSpeed();
+        m_handsBehaviour.updateZ(_speedCounter, _acornsToMaxSpeed, _levelSpeed);
     }
 
     //Se le avisara al GameManager que el jugador se ha dado con un obstaculo con esta función.
     // El mensaje se recibe desde PLayerHitBox
     public void PlayerHit(float timeLost)
     {
-        m_speedCounter -= timeLost;
-        if (m_speedCounter < 0)
-        {
-            m_speedCounter = 0f;
-        }
-
+        _speedCounter -= timeLost;
+        _speedCounter = Mathf.Clamp(_speedCounter, 0f, _acornsToMaxSpeed);
+        UpdatePlayerSpeed();
+        m_handsBehaviour.updateZ(_speedCounter, _acornsToMaxSpeed, _levelSpeed);
     }
-    
-
-    //Corutinas.
-    IEnumerator IncreasePlayerSpeed() 
+   
+    public void HandsTouchingPlayer()
     {
-        while (m_speedCounter < m_acornsToMaxSpeed)
+        if (_gameOverEnabled)
         {
-
-            m_levelSpeed = Mathf.Lerp(m_initialSpeed, m_MaxLevelSpeed, m_speedCounter / m_acornsToMaxSpeed);
-            yield return null;
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
-        m_levelSpeed = m_MaxLevelSpeed;
     }
+    //Corutinas.
 
     IEnumerator ObstacleSpawn()
     {
         yield return new WaitForSeconds(Random.Range(0.1f, 0.5f));
         GameObject spawnTarget= m_obstacles[Random.Range(0, m_obstacles.Length)];
-        if (m_speedCounter / m_acornsToMaxSpeed >= Random.Range(0f, 1f))
+        if (_speedCounter / _acornsToMaxSpeed >= Random.Range(0f, 1f))
         {
             Instantiate(spawnTarget, new Vector3(Random.Range(-9.5f, 9.5f), m_obstacleSpawnPoint.transform.position.y, m_obstacleSpawnPoint.transform.position.z), Quaternion.identity);
         }
-        m_obstacleSpawnCoroutine= null;
+        _obstacleSpawnCoroutine= null;
+    }
+
+    IEnumerator BlockGameOver()
+    {
+        yield return new WaitForSeconds(10f);
+        _gameOverEnabled = true;
     }
 }
+

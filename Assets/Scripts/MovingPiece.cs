@@ -11,7 +11,11 @@ public class MovingPiece : MonoBehaviour
 
     [SerializeField] protected bool m_triggersSpawn = true;
 
-    // Update is called once per frame
+    private void Awake()
+    {
+        UpdateFloorVelocity();
+    }
+
     protected virtual void Update()
     {
         if (m_gameManager==null)
@@ -23,6 +27,10 @@ public class MovingPiece : MonoBehaviour
         CheckForDestruction();
     }
 
+    public void GetStartSpeed(float startSpeed)
+    {
+        m_levelSpeed = startSpeed;
+    }
     private void FixedUpdate()
     {
         UpdateFloorVelocity();
@@ -31,9 +39,8 @@ public class MovingPiece : MonoBehaviour
     {
         if (m_triggersSpawn && transform.position.z >= -81)
         {
-            UnityEngine.Debug.Log("Spawning");
             m_triggersSpawn = false;
-            m_gameManager.m_spawnCallTime= Time.time;
+            m_gameManager._spawnCallTime= Time.time;
             m_gameManager.FloorSpawnRequired();
         }
     }
