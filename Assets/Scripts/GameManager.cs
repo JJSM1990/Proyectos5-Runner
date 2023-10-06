@@ -118,7 +118,7 @@ public class GameManager : MonoBehaviour
         GameObject spawnTarget= m_obstacles[Random.Range(0, m_obstacles.Length)];
         if (_speedCounter / _acornsToMaxSpeed >= Random.Range(0f, 1f))
         {
-            Instantiate(spawnTarget, new Vector3(Random.Range(-9.5f, 9.5f), m_obstacleSpawnPoint.transform.position.y, m_obstacleSpawnPoint.transform.position.z), Quaternion.identity);
+            Instantiate(spawnTarget, new Vector3(Random.Range(-9.5f, 9.5f), spawnTarget.GetComponent<DamagingObstacle>().GetCenter()-1.5f,m_obstacleSpawnPoint.transform.position.z), Quaternion.identity) ;
         }
         _obstacleSpawnCoroutine= null;
     }

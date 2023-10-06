@@ -27,6 +27,12 @@ public class PlayerHitBox : MonoBehaviour
             Debug.Log("Contact");
             m_gameManager.PlayerHit(other.gameObject.GetComponent<DamagingObstacle>().m_damage);
             m_movement.PlayerHit();
+
+        }
+        IPickable ip = other.GetComponent<IPickable>();
+        if (ip != null)
+        {
+            ip.PickUp();
         }
     }
 
@@ -53,10 +59,6 @@ public class PlayerHitBox : MonoBehaviour
         {
             m_movement.IsGrounded(false);
         }
-        IPickable ip = other.GetComponent<IPickable>();
-        if (ip!=null)
-        {
-            ip.PickUp();
-        }
+
     }
 }
