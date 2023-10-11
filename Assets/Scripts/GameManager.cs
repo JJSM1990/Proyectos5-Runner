@@ -35,6 +35,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] GameObject                         m_obstacleSpawnPoint;
     [SerializeField] private GameObject[]               m_obstacles;
     private Coroutine                                   _obstacleSpawnCoroutine;
+    private bool                                        _gameRunning=false;
 
     Vector3 startPosition;
 
@@ -45,15 +46,24 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         _levelSpeed = _initialSpeed;
-        StartCoroutine(BlockGameOver());
+        
     }
 
     void Update()
     {
-        SpawnObstacle();
+        if (_gameRunning)
+        {
+            SpawnObstacle();
+        }
     }
 
     //Funciones privadas
+
+    private void StartGame()
+    {
+        _gameRunning = true;
+        StartCoroutine(BlockGameOver());
+    }
 
     private void SpawnObstacle()
     {
