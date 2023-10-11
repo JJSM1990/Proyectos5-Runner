@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
     //Movement variables
     [SerializeField] private float              _playerHorizontalSpeed;
     [SerializeField] private float              _jumpingSpeed;
+    [SerializeField] private float              _onHitVerticalSpeed;
     [SerializeField] private float              _fallingAcceleration;
     [SerializeField] private float              _dropSpeed;
     [SerializeField] private float              _slideDuration;
@@ -124,7 +125,7 @@ public class PlayerMovement : MonoBehaviour
     {
         m_boxCollider.enabled= false;
         _touchingLeft = _touchingRight = false;
-        _verticalVelocity = _jumpingSpeed*2;
+        _verticalVelocity = _onHitVerticalSpeed;
         _isGrounded = false;
         m_anim.SetTrigger("playerHit"); 
         yield return new WaitForSeconds(0.5f);

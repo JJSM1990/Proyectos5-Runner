@@ -35,7 +35,7 @@ public class AcornSpawner : MonoBehaviour
 
     private void CheckHeight(float xCoordinate, float areaToCheck)
     {
-        Physics.SphereCast(new Vector3(xCoordinate, transform.position.y, transform.position.z), m_areaToCheck, Vector3.down, out RaycastHit hitInfo, 10);
+        Physics.SphereCast(new Vector3(xCoordinate, transform.position.y, transform.position.z), m_areaToCheck, Vector3.down, out RaycastHit hitInfo, 20);
         m_yCoordinate = hitInfo.point.y;
     }
 

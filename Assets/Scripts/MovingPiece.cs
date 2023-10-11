@@ -47,7 +47,7 @@ public class MovingPiece : MonoBehaviour
 
     private void CheckForDestruction()
     {
-        if (transform.position.z >= 40)
+        if (transform.position.z >= 40|| transform.position.y>=8)
         {
             Destroy(this.gameObject);
         }

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using TMPro;
 using TMPro.EditorUtilities;
 using Unity.VisualScripting;
+using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -27,12 +28,15 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float                      _spawnExecutionTime;
 
     [SerializeField] private MonsterHandsBehaviour      m_handsBehaviour;
-    [SerializeField] GameObject                         m_floorSpawner;
-    [SerializeField] GameObject                         m_floor;
+    [SerializeField] private GameObject                 m_floorSpawner;
+    [SerializeField] private GameObject                 m_floor;
+    [SerializeField] private GameObject                 _previousFloorPiece;
 
     [SerializeField] GameObject                         m_obstacleSpawnPoint;
     [SerializeField] private GameObject[]               m_obstacles;
     private Coroutine                                   _obstacleSpawnCoroutine;
+
+    Vector3 startPosition;
 
 
     private bool                                        _gameOverEnabled=false;
@@ -62,7 +66,7 @@ public class GameManager : MonoBehaviour
     private void UpdatePlayerSpeed()
     {
 
-        _levelSpeed =  _speedCounter == _acornsToMaxSpeed ?
+            _levelSpeed =  _speedCounter == _acornsToMaxSpeed ?
             _MaxLevelSpeed:
             Mathf.Lerp(_initialSpeed, _MaxLevelSpeed, _speedCounter / _acornsToMaxSpeed);
 
@@ -82,6 +86,8 @@ public class GameManager : MonoBehaviour
     {
         GameObject floorPiece=Instantiate(m_floor, m_floorSpawner.transform.position, m_floorSpawner.transform.rotation);
         floorPiece.GetComponent<MovingPiece>().GetStartSpeed(_levelSpeed);
+        floorPiece.transform.position = new Vector3(_previousFloorPiece.transform.position.x, _previousFloorPiece.transform.position.y, _previousFloorPiece.transform.position.z - 40);
+        _previousFloorPiece= floorPiece;
     }
 
     public void AcornPickUp()
@@ -90,7 +96,7 @@ public class GameManager : MonoBehaviour
         _speedCounter++;
         m_UIcounter.text = "Acorns: "+_acornCounter.ToString();
         UpdatePlayerSpeed();
-        m_handsBehaviour.updateZ(_speedCounter, _acornsToMaxSpeed, _levelSpeed);
+        m_handsBehaviour.updateZ(_speedCounter, _acornsToMaxSpeed);
     }
 
     //Se le avisara al GameManager que el jugador se ha dado con un obstaculo con esta función.
@@ -100,7 +106,7 @@ public class GameManager : MonoBehaviour
         _speedCounter -= timeLost;
         _speedCounter = Mathf.Clamp(_speedCounter, 0f, _acornsToMaxSpeed);
         UpdatePlayerSpeed();
-        m_handsBehaviour.updateZ(_speedCounter, _acornsToMaxSpeed, _levelSpeed);
+        m_handsBehaviour.updateZ(_speedCounter, _acornsToMaxSpeed);
     }
    
     public void HandsTouchingPlayer()
@@ -115,12 +121,25 @@ public class GameManager : MonoBehaviour
     IEnumerator ObstacleSpawn()
     {
         yield return new WaitForSeconds(Random.Range(0.1f, 0.5f));
-        GameObject spawnTarget= m_obstacles[Random.Range(0, m_obstacles.Length)];
+        GameObject spawnTarget = m_obstacles[Random.Range(0, m_obstacles.Length)];
         if (_speedCounter / _acornsToMaxSpeed >= Random.Range(0f, 1f))
         {
-            Instantiate(spawnTarget, new Vector3(Random.Range(-9.5f, 9.5f), spawnTarget.GetComponent<DamagingObstacle>().GetCenter()-1.5f,m_obstacleSpawnPoint.transform.position.z), Quaternion.identity) ;
+            Vector3 spawnPosition = new Vector3(Random.Range(-9.5f, 9.5f), m_obstacleSpawnPoint.transform.position.y, m_obstacleSpawnPoint.transform.position.z);       
+            if (Physics.Raycast(spawnPosition, Vector3.down, out RaycastHit hitInfo, 11f))
+            {
+                switch (spawnTarget.name)
+                {
+                    case "WalkableObstacle":
+                        Instantiate(spawnTarget, new Vector3(hitInfo.point.x, hitInfo.point.y, hitInfo.point.z - 20f), Quaternion.identity);
+                        break;
+                    default:
+                        Instantiate(spawnTarget, hitInfo.point, Quaternion.identity);
+                        break;
+                }
+            }
+            
         }
-        _obstacleSpawnCoroutine= null;
+        _obstacleSpawnCoroutine = null;
     }
 
     IEnumerator BlockGameOver()
@@ -128,5 +147,6 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(10f);
         _gameOverEnabled = true;
     }
+
 }
 

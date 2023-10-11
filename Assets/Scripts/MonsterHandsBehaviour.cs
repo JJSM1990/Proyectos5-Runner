@@ -16,6 +16,9 @@ public class MonsterHandsBehaviour : MonoBehaviour
     private bool _updatingPosition;
     private Coroutine _updatingCoroutine;
 
+    [SerializeField] private IndividualHandsBehaviour leftHand, rightHand;
+    private bool GameEnding;
+
 
 
 
@@ -23,18 +26,14 @@ public class MonsterHandsBehaviour : MonoBehaviour
 
     private void Update()
     {
-        transform.position = new Vector3(0, 8, _currentZcoordinate);
+        transform.position = new Vector3(0, 14, _currentZcoordinate);
         if (_currentZcoordinate == _minZcoordinate)
         {
             m_gameManager.HandsTouchingPlayer();
         }
     }
 
-    private void CalculateX()
-    {
-        _currentXcoordinate = _playerTransform.position.x;
-    }
-    public void updateZ(float currentCounter, float maxCounter, float currentLevelSpeed)
+    public void updateZ(float currentCounter, float maxCounter)
     {
         if (_updatingCoroutine != null)
         {
@@ -42,6 +41,18 @@ public class MonsterHandsBehaviour : MonoBehaviour
             _updatingCoroutine = null;
         }
         float targetZ = (currentCounter / maxCounter) * _maxZcoordinate;
+        if (currentCounter <1)
+        {
+            GameEnding = true;
+            leftHand.MoveHandsX(_updateDuration, GameEnding);
+            rightHand.MoveHandsX(_updateDuration, GameEnding);
+        }
+        else if (GameEnding)
+        {
+            GameEnding = false;
+            leftHand.MoveHandsX(_updateDuration, GameEnding);
+            rightHand.MoveHandsX(_updateDuration, GameEnding);
+        }
         _updatingCoroutine = StartCoroutine(UpdateZ(targetZ));
     }
 
@@ -54,7 +65,6 @@ public class MonsterHandsBehaviour : MonoBehaviour
             {
                 _currentZcoordinate = Mathf.Lerp(startingZ, targetZ, time / _updateDuration);
                 time += Time.deltaTime;
-                Debug.Log(time / _updateDuration + " " + _currentZcoordinate);
                 yield return null;
             }
             _currentZcoordinate = targetZ;
