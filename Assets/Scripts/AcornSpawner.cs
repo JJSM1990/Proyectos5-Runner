@@ -14,6 +14,7 @@ public class AcornSpawner : MonoBehaviour
     private float m_newXcoordinate;
     private float m_yCoordinate;
     private Coroutine m_SpawnCoroutine;
+    private bool m_gameStart;
 
     private void Start()
     {
@@ -22,7 +23,10 @@ public class AcornSpawner : MonoBehaviour
 
     private void Update()
     {
-        SpawnAcorn();
+        if (m_gameStart)
+        {
+            SpawnAcorn();
+        }
     }
 
     private void SpawnAcorn()
@@ -44,6 +48,11 @@ public class AcornSpawner : MonoBehaviour
         m_timeBetweenSpawns = m_distanceBetweenSpawns / m_GameManager.GetLevelSpeed();
     }
 
+
+    public void StartGame()
+    {
+        m_gameStart = true;
+    }
     IEnumerator SpawnCoroutine()
     {
         CalculateTimeBetweenSpawn();

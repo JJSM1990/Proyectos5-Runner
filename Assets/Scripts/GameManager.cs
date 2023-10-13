@@ -7,6 +7,7 @@ using Unity.VisualScripting;
 using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -27,7 +28,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] public float                       _spawnCallTime;
     [SerializeField] private float                      _spawnExecutionTime;
 
+    [SerializeField] private AcornSpawner               _acornSpawner;
     [SerializeField] private MonsterHandsBehaviour      m_handsBehaviour;
+    [SerializeField] private PlayerMovement             m_player;
     [SerializeField] private GameObject                 m_floorSpawner;
     [SerializeField] private GameObject                 m_floor;
     [SerializeField] private GameObject                 _previousFloorPiece;
@@ -43,9 +46,12 @@ public class GameManager : MonoBehaviour
     private bool                                        _gameOverEnabled=false;
     //Variables para el UI
     [SerializeField] TextMeshProUGUI                    m_UIcounter;
+    [SerializeField] GameObject                         m_mainMenu;
+    [SerializeField] Slider                             m_speedBar;
+    
     void Start()
     {
-        _levelSpeed = _initialSpeed;
+        _levelSpeed = 0f;
         
     }
 
@@ -59,10 +65,15 @@ public class GameManager : MonoBehaviour
 
     //Funciones privadas
 
-    private void StartGame()
+    public void StartGame()
     {
         _gameRunning = true;
         StartCoroutine(BlockGameOver());
+        _levelSpeed = _initialSpeed;
+        m_handsBehaviour.StartMovement();
+        _acornSpawner.StartGame();
+        m_player.GameStart();
+        m_mainMenu.SetActive(false);
     }
 
     private void SpawnObstacle()
@@ -100,23 +111,44 @@ public class GameManager : MonoBehaviour
         _previousFloorPiece= floorPiece;
     }
 
+
+    public void PlayerSliding(float slideTime)
+    {
+        StartCoroutine(PlayerSlidingCoroutine(slideTime));
+    }
+
+    // Funciones para las bellotas
     public void AcornPickUp()
     {
         _acornCounter++;
         _speedCounter++;
-        m_UIcounter.text = "Acorns: "+_acornCounter.ToString();
+        UpdateAcorns();
+    }
+
+    public void AcornLost()
+    {
+        _acornCounter--;
+        _speedCounter-=2;
+        UpdateAcorns();
+    }
+
+    private void UpdateAcorns()
+    {
+        _speedCounter = Mathf.Clamp(_speedCounter, 0f, _acornsToMaxSpeed);
+        m_UIcounter.text = "Acorns: " + _acornCounter.ToString();
         UpdatePlayerSpeed();
+        m_speedBar.value = _speedCounter / _acornsToMaxSpeed;
         m_handsBehaviour.updateZ(_speedCounter, _acornsToMaxSpeed);
     }
+
+
 
     //Se le avisara al GameManager que el jugador se ha dado con un obstaculo con esta función.
     // El mensaje se recibe desde PLayerHitBox
     public void PlayerHit(float timeLost)
     {
         _speedCounter -= timeLost;
-        _speedCounter = Mathf.Clamp(_speedCounter, 0f, _acornsToMaxSpeed);
-        UpdatePlayerSpeed();
-        m_handsBehaviour.updateZ(_speedCounter, _acornsToMaxSpeed);
+        UpdateAcorns();
     }
    
     public void HandsTouchingPlayer()
@@ -142,6 +174,9 @@ public class GameManager : MonoBehaviour
                     case "WalkableObstacle":
                         Instantiate(spawnTarget, new Vector3(hitInfo.point.x, hitInfo.point.y, hitInfo.point.z - 20f), Quaternion.identity);
                         break;
+                    case "SlidingObstacle":
+                        Instantiate(spawnTarget, new Vector3(0f, hitInfo.point.y, hitInfo.point.z), Quaternion.identity);
+                        break;
                     default:
                         Instantiate(spawnTarget, hitInfo.point, Quaternion.identity);
                         break;
@@ -156,7 +191,17 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(10f);
         _gameOverEnabled = true;
+        UnityEngine.Debug.Log("Ready");
     }
 
+    IEnumerator PlayerSlidingCoroutine(float slideTime)
+    {
+        _speedCounter += 5f;
+        UpdateAcorns();
+        yield return new WaitForSeconds(slideTime);
+        _speedCounter -= 5f;
+        UpdateAcorns();
+
+    }
 }
 

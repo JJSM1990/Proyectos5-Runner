@@ -5,7 +5,6 @@ using UnityEngine;
 public class DamagingObstacle : MovingPiece
 {
     [SerializeField] public float m_damage;
-    [SerializeField] public float m_height;
 
   
     protected override void Update()
@@ -19,11 +18,6 @@ public class DamagingObstacle : MovingPiece
         {
             
         }
-    }
-
-    public float GetCenter()
-    {
-        return m_height / 2; 
     }
 }
 
