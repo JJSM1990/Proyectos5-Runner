@@ -69,11 +69,17 @@ public class GameManager : MonoBehaviour
     {
         _gameRunning = true;
         StartCoroutine(BlockGameOver());
+        Cursor.visible = false;
         _levelSpeed = _initialSpeed;
         m_handsBehaviour.StartMovement();
         _acornSpawner.StartGame();
         m_player.GameStart();
         m_mainMenu.SetActive(false);
+    }
+
+    public void EndGame()
+    {
+        Application.Quit();
     }
 
     private void SpawnObstacle()
