@@ -16,7 +16,6 @@ public class PlayerHitBox : MonoBehaviour
     {
         if (other.name == "RightLimit")
         {
-            Debug.Log("touching");
             m_movement.CheckTouchingRight(true);
         } else if (other.name == "LeftLimit")
         {
@@ -24,7 +23,6 @@ public class PlayerHitBox : MonoBehaviour
         }
         if (other.tag== "Obstacle")
         {
-            Debug.Log("Contact");
             m_gameManager.PlayerHit(other.gameObject.GetComponent<DamagingObstacle>().m_damage);
             m_movement.PlayerHit();
 

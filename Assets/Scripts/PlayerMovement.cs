@@ -24,7 +24,7 @@ public class PlayerMovement : MonoBehaviour
 
 
     // Sliding Variables
-    private bool                                _removePlayerControl = false;
+    private bool                                _removePlayerControl = true;
     private bool                                _slideReady=true;
     private Vector3                             _normalHitboxSize = new Vector3(0.67f, 2.7f, 0.46f);
     private Vector3                             _normalHitboxCenter = new Vector3(-0.06f, 1.38f, 0.24f);
@@ -115,6 +115,7 @@ public class PlayerMovement : MonoBehaviour
             if (_slidingCoroutine != null)
             {
                 _removePlayerControl = false;
+                ChangeHitBoxSliding(false);
                 StopCoroutine(_slidingCoroutine);
                 m_anim.SetTrigger("slideEnd");
                 _slidingCoroutine = null;
@@ -123,9 +124,25 @@ public class PlayerMovement : MonoBehaviour
 
     }
 
+    private void ChangeHitBoxSliding(bool isSliding)
+    {
+        BoxCollider bc = m_model.GetComponent<BoxCollider>();
+        if (isSliding)
+        {
+            bc.center = _slidingHitboxCenter;
+            bc.size = _slidingHitboxSize;
+        }
+        else
+        {
+            Debug.Log("HitBox changed to normal");
+            bc.center = _normalHitboxCenter;
+            bc.size = _normalHitboxSize;
+        }
+    } 
     public void GameStart()
     {
         _gameRunning = true;
+        _removePlayerControl = false;
     }
     public void CheckTouchingRight(bool touching)
     {
@@ -144,8 +161,15 @@ public class PlayerMovement : MonoBehaviour
         _touchingLeft = _touchingRight = false;
         _verticalVelocity = _onHitVerticalSpeed;
         _isGrounded = false;
-        m_anim.SetTrigger("playerHit"); 
+        m_anim.SetTrigger("playerHit");
+        if (_slidingCoroutine!=null)
+        {
+            ChangeHitBoxSliding(false);
+            StopCoroutine( _slidingCoroutine );
+            _slidingCoroutine = null;
+        }
         yield return new WaitForSeconds(0.5f);
+
         _removePlayerControl = false;
         m_anim.SetBool("grounded", _isGrounded);
         m_boxCollider.enabled = true;
@@ -153,26 +177,23 @@ public class PlayerMovement : MonoBehaviour
 
     IEnumerator Sliding()
     {
-        _slideReady = false;
-        BoxCollider bc = m_model.GetComponent<BoxCollider>();
-        gameManager.PlayerSliding(_slideDuration);
         StartCoroutine(SliderCooldown());
+        ChangeHitBoxSliding(true);
+        gameManager.PlayerSliding(_slideDuration);
         _removePlayerControl = true;
         m_anim.SetTrigger("slideStart");
-        bc.center = _slidingHitboxCenter;
-        bc.size= _slidingHitboxSize;
         _playerHorizontalInput = 0;
         yield return new WaitForSeconds(_slideDuration);
+        ChangeHitBoxSliding(false);
         _removePlayerControl = false;
         m_anim.SetTrigger("slideEnd");
-        bc.center = _normalHitboxCenter;
-        bc.size= _normalHitboxSize;
         _slidingCoroutine = null;
     }
 
     IEnumerator SliderCooldown()
     {
+        _slideReady = false;
         yield return new WaitForSeconds(_slideCooldown);
-        _slideReady= true;
+        _slideReady = true;
     }
 }

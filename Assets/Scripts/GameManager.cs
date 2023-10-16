@@ -197,7 +197,6 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitForSeconds(10f);
         _gameOverEnabled = true;
-        UnityEngine.Debug.Log("Ready");
     }
 
     IEnumerator PlayerSlidingCoroutine(float slideTime)
