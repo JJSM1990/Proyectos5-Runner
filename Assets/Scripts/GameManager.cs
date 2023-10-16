@@ -161,6 +161,7 @@ public class GameManager : MonoBehaviour
     {
         if (_gameOverEnabled)
         {
+            Cursor.visible = true;
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
