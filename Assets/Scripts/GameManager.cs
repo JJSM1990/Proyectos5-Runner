@@ -48,6 +48,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI                    m_UIcounter;
     [SerializeField] GameObject                         m_mainMenu;
     [SerializeField] Slider                             m_speedBar;
+    [SerializeField] AudioSource                        m_audioSource;
     
     void Start()
     {
@@ -74,6 +75,7 @@ public class GameManager : MonoBehaviour
         m_handsBehaviour.StartMovement();
         _acornSpawner.StartGame();
         m_player.GameStart();
+        m_audioSource.Play();
         m_mainMenu.SetActive(false);
     }
 
@@ -141,7 +143,7 @@ public class GameManager : MonoBehaviour
     private void UpdateAcorns()
     {
         _speedCounter = Mathf.Clamp(_speedCounter, 0f, _acornsToMaxSpeed);
-        m_UIcounter.text = "Acorns: " + _acornCounter.ToString();
+        m_UIcounter.text = _acornCounter.ToString();
         UpdatePlayerSpeed();
         m_speedBar.value = _speedCounter / _acornsToMaxSpeed;
         m_handsBehaviour.updateZ(_speedCounter, _acornsToMaxSpeed);
@@ -162,6 +164,7 @@ public class GameManager : MonoBehaviour
         if (_gameOverEnabled)
         {
             Cursor.visible = true;
+            m_audioSource.Stop();
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
