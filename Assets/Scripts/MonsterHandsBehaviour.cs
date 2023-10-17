@@ -107,12 +107,11 @@ public class MonsterHandsBehaviour : MonoBehaviour
         float currentX=startingX;
         while (time<_updateDuration)
         {
-            
             time+= Time.deltaTime;
             Vector3 currentPosition = hand.transform.position;
             currentX =Mathf.Lerp(startingX, targetX, time / _updateDuration);
             hand.transform.position= new Vector3(currentX, currentPosition.y, currentPosition.z);
-            yield return null;
+            yield return new WaitForEndOfFrame();
         }
         if (hand.name =="LHempty")
         {

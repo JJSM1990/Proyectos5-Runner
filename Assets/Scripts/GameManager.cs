@@ -48,7 +48,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] TextMeshProUGUI                    m_UIcounter;
     [SerializeField] GameObject                         m_mainMenu;
     [SerializeField] Slider                             m_speedBar;
-    [SerializeField] AudioSource                        m_audioSource;
+    [SerializeField] AudioSource                        m_backgroundMusic;
+    [SerializeField] AudioSource                        m_audio;
+    [SerializeField] List<AudioClip>                    m_audioList;
+
     
     void Start()
     {
@@ -75,7 +78,7 @@ public class GameManager : MonoBehaviour
         m_handsBehaviour.StartMovement();
         _acornSpawner.StartGame();
         m_player.GameStart();
-        m_audioSource.Play();
+        m_backgroundMusic.Play();
         m_mainMenu.SetActive(false);
     }
 
@@ -130,6 +133,7 @@ public class GameManager : MonoBehaviour
     {
         _acornCounter++;
         _speedCounter++;
+        m_audio.Play();
         UpdateAcorns();
     }
 
@@ -164,7 +168,7 @@ public class GameManager : MonoBehaviour
         if (_gameOverEnabled)
         {
             Cursor.visible = true;
-            m_audioSource.Stop();
+            m_backgroundMusic.Stop();
             SceneManager.LoadScene(SceneManager.GetActiveScene().name);
         }
     }
