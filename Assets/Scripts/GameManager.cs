@@ -47,10 +47,10 @@ public class GameManager : MonoBehaviour
     //Variables para el UI
     [SerializeField] TextMeshProUGUI                    m_UIcounter;
     [SerializeField] GameObject                         m_mainMenu;
+    [SerializeField] GameObject                         m_interface;
+    [SerializeField] GameObject                         m_gameOverMenu;
     [SerializeField] Slider                             m_speedBar;
-    [SerializeField] AudioSource                        m_backgroundMusic;
-    [SerializeField] AudioSource                        m_audio;
-    [SerializeField] List<AudioClip>                    m_audioList;
+    
 
     
     void Start()
@@ -78,12 +78,17 @@ public class GameManager : MonoBehaviour
         m_handsBehaviour.StartMovement();
         _acornSpawner.StartGame();
         m_player.GameStart();
-        m_backgroundMusic.Play();
+        SoundManager.Instance.m_musicSource.Play();
         m_mainMenu.SetActive(false);
+        m_interface.SetActive(true);
+        m_gameOverMenu.SetActive(false);
+
     }
 
     public void EndGame()
     {
+        SoundManager.Instance.m_musicSource.Stop();
+        m_interface.SetActive(false);
         Application.Quit();
     }
 
@@ -133,7 +138,7 @@ public class GameManager : MonoBehaviour
     {
         _acornCounter++;
         _speedCounter++;
-        m_audio.Play();
+        SoundManager.Instance.PlaySound(0);
         UpdateAcorns();
     }
 
@@ -160,6 +165,7 @@ public class GameManager : MonoBehaviour
     public void PlayerHit(float timeLost)
     {
         _speedCounter -= timeLost;
+        SoundManager.Instance.PlaySound(2);
         UpdateAcorns();
     }
    
@@ -168,9 +174,13 @@ public class GameManager : MonoBehaviour
         if (_gameOverEnabled)
         {
             Cursor.visible = true;
-            m_backgroundMusic.Stop();
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+            m_gameOverMenu.SetActive(true);
         }
+    }
+
+    public void ResetScene()
+    {
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
     //Corutinas.
 

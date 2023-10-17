@@ -81,6 +81,7 @@ public class PlayerMovement : MonoBehaviour
             if(!_removePlayerControl && (Input.GetKey(KeyCode.W)|| Input.GetKey(KeyCode.Space)))
             {
                 _verticalVelocity = 10f;
+                SoundManager.Instance.PlaySound(1);
             } else
             {
                 _verticalVelocity = 0f;
@@ -112,6 +113,7 @@ public class PlayerMovement : MonoBehaviour
         m_anim.SetBool("grounded", isGrounded);
         if (!isGrounded)
         {
+
             if (_slidingCoroutine != null)
             {
                 _removePlayerControl = false;
