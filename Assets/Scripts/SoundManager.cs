@@ -37,7 +37,7 @@ public class SoundManager : MonoBehaviour
         m_effectSource.PlayOneShot(m_audios[i]);
     }
 
-    public void StopSound()
+    public void StopSound(int i)
     {
         m_effectSource.Stop();
     }

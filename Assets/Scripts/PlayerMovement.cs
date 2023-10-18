@@ -48,9 +48,10 @@ public class PlayerMovement : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        CalculateVerticalMovement();
         CapturePlayerHorizontalInput();
         CheckIfTouchingLimits();
-        CalculateVerticalMovement();
+      
         m_model.transform.position=m_model.transform.position + new Vector3(_playerHorizontalInput*Time.deltaTime*_playerHorizontalSpeed,_verticalVelocity* Time.deltaTime, 0);
         if (!_removePlayerControl && _isGrounded&& _gameRunning && !m_runningSound.isPlaying)
         {
@@ -101,7 +102,7 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
 
-        } else if (Input.GetKeyDown(KeyCode.S) && _gameRunning && !_removePlayerControl)
+        } else if (Input.GetKey(KeyCode.S) && _gameRunning && !_removePlayerControl)
         {
 
             _verticalVelocity= -_dropSpeed;
@@ -131,6 +132,10 @@ public class PlayerMovement : MonoBehaviour
                 StopCoroutine(_slidingCoroutine);
                 m_anim.SetTrigger("slideEnd");
                 _slidingCoroutine = null;
+            }
+            else 
+            {
+                SoundManager.Instance.StopSound(3);
             }
         }
 
@@ -180,8 +185,8 @@ public class PlayerMovement : MonoBehaviour
         ChangeHitBoxSliding(false);
         StopCoroutine(_slidingCoroutine);
         _slidingCoroutine = null;
+        SoundManager.Instance.StopSound(3);
         m_runningSound.Play();
-        SoundManager.Instance.StopSound();
     }
     IEnumerator PlayerHitCoroutine()
     {

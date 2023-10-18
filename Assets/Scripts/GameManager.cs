@@ -149,10 +149,13 @@ public class GameManager : MonoBehaviour
     // Funciones para las bellotas
     public void AcornPickUp()
     {
-        _acornCounter++;
-        _speedCounter++;
-        SoundManager.Instance.PlaySound(0);
-        UpdateAcorns();
+        if(_gameRunning)
+        {
+            _acornCounter++;
+            _speedCounter++;
+            SoundManager.Instance.PlaySound(0);
+            UpdateAcorns();
+        }  
     }
 
     public void AcornLost()
