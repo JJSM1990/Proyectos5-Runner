@@ -21,8 +21,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private float                      _MaxLevelSpeed = 0f;
     [SerializeField] private float                      _initialSpeed = 0f;
 
-
-    static private float                                _acornCounter = 0f;
+    static private float                                _highScore = 0f;
+    private float                                       _acornCounter = 0f;
     [SerializeField] private float                      _speedCounter = 0f;
     [SerializeField] private float                      _acornsToMaxSpeed;
     [SerializeField] public float                       _spawnCallTime;
@@ -45,8 +45,10 @@ public class GameManager : MonoBehaviour
 
 
     private bool                                        _gameOverEnabled=false;
+    private bool                                        _gameOver = false;
     //Variables para el UI
     [SerializeField] TextMeshProUGUI                    m_UIcounter;
+    [SerializeField] GameObject                         m_highScoreUI;
     [SerializeField] GameObject                         m_mainMenu;
     [SerializeField] GameObject                         m_interface;
     [SerializeField] GameObject                         m_gameOverMenu;
@@ -57,9 +59,10 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         _levelSpeed = 0f;
-        
-    }
 
+        UpdateHighScore();
+    }
+    
     void Update()
     {
         if (_gameRunning)
@@ -113,7 +116,15 @@ public class GameManager : MonoBehaviour
 
     // Funciones Publicas
 
-
+    private void UpdateHighScore()
+    {
+        UnityEngine.Debug.Log(_highScore);
+        if (_highScore > 0f)
+        {
+            m_highScoreUI.SetActive(true);
+            m_highScoreUI.transform.Find("HiScoreText").GetComponent<TextMeshProUGUI>().text = "High Score: \n" + _highScore;
+        }
+    }
     // Los diferentes objetos que se mueven hacia el jugador pediran al gameManager la velocidad a la que iran de aqui.
     public float GetLevelSpeed()
     {
@@ -171,10 +182,16 @@ public class GameManager : MonoBehaviour
         UpdateAcorns();
     }
    
-    public void HandsTouchingPlayer()
+    public void GameOver()
     {
-        if (_gameOverEnabled)
+        if (_gameOverEnabled&&_gameOver==false)
         {
+            if (_acornCounter>_highScore)
+            {
+                _highScore = _acornCounter;
+            }
+            _gameOver = true;
+            SoundManager.Instance.PlaySound(4);
             m_player.ChangeGameState(false);
             Cursor.visible = true;
             m_gameOverMenu.SetActive(true);
@@ -205,7 +222,7 @@ public class GameManager : MonoBehaviour
                         Instantiate(spawnTarget, new Vector3(hitInfo.point.x, hitInfo.point.y, hitInfo.point.z - 20f), Quaternion.identity);
                         break;
                     case "SlidingObstacle":
-                        Instantiate(spawnTarget, new Vector3(0f, hitInfo.point.y, hitInfo.point.z), Quaternion.identity);
+                        Instantiate(spawnTarget, new Vector3(0f, 0.5f, hitInfo.point.z), Quaternion.identity);
                         break;
                     default:
                         Instantiate(spawnTarget, hitInfo.point, Quaternion.identity);

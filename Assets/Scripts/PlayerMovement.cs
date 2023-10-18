@@ -43,7 +43,7 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private BoxCollider        m_boxCollider;
 
-    [SerializeField] private AudioSource m_runningSound;
+    [SerializeField] private AudioSource        m_runningSound;
 
     // Update is called once per frame
     void Update()
@@ -101,7 +101,7 @@ public class PlayerMovement : MonoBehaviour
                 }
             }
 
-        } else if (Input.GetKeyDown(KeyCode.S) && _gameRunning)
+        } else if (Input.GetKeyDown(KeyCode.S) && _gameRunning && !_removePlayerControl)
         {
 
             _verticalVelocity= -_dropSpeed;
@@ -175,6 +175,14 @@ public class PlayerMovement : MonoBehaviour
         _touchingLeft = touching;
     }
 
+    private void EndSlide()
+    {
+        ChangeHitBoxSliding(false);
+        StopCoroutine(_slidingCoroutine);
+        _slidingCoroutine = null;
+        m_runningSound.Play();
+        SoundManager.Instance.StopSound();
+    }
     IEnumerator PlayerHitCoroutine()
     {
         m_boxCollider.enabled= false;
@@ -186,9 +194,7 @@ public class PlayerMovement : MonoBehaviour
         m_anim.SetTrigger("playerHit");
         if (_slidingCoroutine!=null)
         {
-            ChangeHitBoxSliding(false);
-            StopCoroutine( _slidingCoroutine );
-            _slidingCoroutine = null;
+            EndSlide();
         }
         yield return new WaitForSeconds(0.5f);
         _removePlayerControl = false;
@@ -199,6 +205,7 @@ public class PlayerMovement : MonoBehaviour
     IEnumerator Sliding()
     {
         StartCoroutine(SliderCooldown());
+        SoundManager.Instance.PlaySound(3);
         ChangeHitBoxSliding(true);
         m_runningSound.Pause();
         gameManager.PlayerSliding(_slideDuration);
@@ -206,11 +213,9 @@ public class PlayerMovement : MonoBehaviour
         m_anim.SetTrigger("slideStart");
         _playerHorizontalInput = 0;
         yield return new WaitForSeconds(_slideDuration);
-        ChangeHitBoxSliding(false);
-        m_runningSound.Play();
         _removePlayerControl = false;
         m_anim.SetTrigger("slideEnd");
-        _slidingCoroutine = null;
+        EndSlide();
     }
 
     IEnumerator SliderCooldown()

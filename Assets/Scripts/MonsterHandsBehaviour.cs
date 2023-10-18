@@ -26,13 +26,12 @@ public class MonsterHandsBehaviour : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log(_currentZcoordinate);
         if (_gameStarted)
         {
             transform.position = new Vector3(0, 14, _currentZcoordinate);
             if (_currentZcoordinate == _minZcoordinate)
             {
-                m_gameManager.HandsTouchingPlayer();
+                m_gameManager.GameOver();
             }
         }
     }
