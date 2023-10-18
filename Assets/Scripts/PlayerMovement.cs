@@ -133,7 +133,7 @@ public class PlayerMovement : MonoBehaviour
     }
     public void PlayFootStep()
     {
-        if (_isGrounded)
+        if (_gameRunning)
         {
             m_runningSource.PlayOneShot(m_footSteplist[Random.Range(0, m_footSteplist.Count)]);
         }
