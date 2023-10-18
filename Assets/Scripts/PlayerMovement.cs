@@ -162,6 +162,9 @@ public class PlayerMovement : MonoBehaviour
         if (running)
         {
             m_anim.SetTrigger("Start");
+        } else
+        {
+            m_anim.SetTrigger("Death");
         }
         
     }
