@@ -42,7 +42,9 @@ public class PlayerMovement : MonoBehaviour
     private Coroutine _slidingCoroutine;
 
     [SerializeField] private BoxCollider        m_boxCollider;
-     
+
+    [SerializeField] private AudioSource m_runningSound;
+
     // Update is called once per frame
     void Update()
     {
@@ -50,6 +52,13 @@ public class PlayerMovement : MonoBehaviour
         CheckIfTouchingLimits();
         CalculateVerticalMovement();
         m_model.transform.position=m_model.transform.position + new Vector3(_playerHorizontalInput*Time.deltaTime*_playerHorizontalSpeed,_verticalVelocity* Time.deltaTime, 0);
+        if (!_removePlayerControl && _isGrounded&& _gameRunning && !m_runningSound.isPlaying)
+        {
+            m_runningSound.Play();
+        } else if(!_isGrounded&&m_runningSound.isPlaying)
+        {
+            m_runningSound.Pause();
+        }
     }
 
     private void CapturePlayerHorizontalInput()
@@ -81,6 +90,7 @@ public class PlayerMovement : MonoBehaviour
             if(!_removePlayerControl && (Input.GetKey(KeyCode.W)|| Input.GetKey(KeyCode.Space)))
             {
                 _verticalVelocity = 10f;
+                
                 SoundManager.Instance.PlaySound(1);
             } else
             {
@@ -141,10 +151,19 @@ public class PlayerMovement : MonoBehaviour
             bc.size = _normalHitboxSize;
         }
     } 
-    public void GameStart()
+    public void ChangeGameState(bool running)
     {
-        _gameRunning = true;
-        _removePlayerControl = false;
+        _gameRunning = running;
+        _removePlayerControl = !running;
+        if (running)
+        {
+            m_runningSound.Play();
+            m_anim.SetTrigger("Start");
+        } else
+        {
+            m_runningSound.Pause();
+        }
+        
     }
     public void CheckTouchingRight(bool touching)
     {
@@ -163,6 +182,7 @@ public class PlayerMovement : MonoBehaviour
         _touchingLeft = _touchingRight = false;
         _verticalVelocity = _onHitVerticalSpeed;
         _isGrounded = false;
+        m_runningSound.Pause();
         m_anim.SetTrigger("playerHit");
         if (_slidingCoroutine!=null)
         {
@@ -171,7 +191,6 @@ public class PlayerMovement : MonoBehaviour
             _slidingCoroutine = null;
         }
         yield return new WaitForSeconds(0.5f);
-
         _removePlayerControl = false;
         m_anim.SetBool("grounded", _isGrounded);
         m_boxCollider.enabled = true;
@@ -181,12 +200,14 @@ public class PlayerMovement : MonoBehaviour
     {
         StartCoroutine(SliderCooldown());
         ChangeHitBoxSliding(true);
+        m_runningSound.Pause();
         gameManager.PlayerSliding(_slideDuration);
         _removePlayerControl = true;
         m_anim.SetTrigger("slideStart");
         _playerHorizontalInput = 0;
         yield return new WaitForSeconds(_slideDuration);
         ChangeHitBoxSliding(false);
+        m_runningSound.Play();
         _removePlayerControl = false;
         m_anim.SetTrigger("slideEnd");
         _slidingCoroutine = null;

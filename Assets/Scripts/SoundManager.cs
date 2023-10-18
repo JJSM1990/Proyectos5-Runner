@@ -6,7 +6,7 @@ public class SoundManager : MonoBehaviour
 {
     public static SoundManager Instance;
 
-    [SerializeField] public  AudioSource m_musicSource, m_effectSource;
+    [SerializeField] public AudioSource m_BackgroundMusicSource, m_effectSource;
     [SerializeField] List<AudioClip> m_audios;
 
     private void Awake()
@@ -22,13 +22,18 @@ public class SoundManager : MonoBehaviour
         }
     }
 
+    public void PlayBackgorundMusic()
+    {
+        m_BackgroundMusicSource.Play();
+    }
+
+    public void StopBackgorundMusic()
+    {
+        m_BackgroundMusicSource.Stop();
+    }
+
     public void PlaySound(int i)
     {
         m_effectSource.PlayOneShot(m_audios[i]);
-
-        if(i == 3)
-        {
-            m_musicSource.loop = true;
-        }
     }
 }

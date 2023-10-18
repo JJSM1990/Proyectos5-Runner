@@ -34,6 +34,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject                 m_floorSpawner;
     [SerializeField] private GameObject                 m_floor;
     [SerializeField] private GameObject                 _previousFloorPiece;
+    [SerializeField] private CameraMovement             m_cameraMovement;
 
     [SerializeField] GameObject                         m_obstacleSpawnPoint;
     [SerializeField] private GameObject[]               m_obstacles;
@@ -77,17 +78,18 @@ public class GameManager : MonoBehaviour
         _levelSpeed = _initialSpeed;
         m_handsBehaviour.StartMovement();
         _acornSpawner.StartGame();
-        m_player.GameStart();
-        SoundManager.Instance.m_musicSource.Play();
+        m_player.ChangeGameState(true);
+        SoundManager.Instance.PlayBackgorundMusic();
         m_mainMenu.SetActive(false);
         m_interface.SetActive(true);
         m_gameOverMenu.SetActive(false);
+        m_cameraMovement.StartGame();
 
     }
 
     public void EndGame()
     {
-        SoundManager.Instance.m_musicSource.Stop();
+        SoundManager.Instance.StopBackgorundMusic();
         m_interface.SetActive(false);
         Application.Quit();
     }
@@ -173,8 +175,12 @@ public class GameManager : MonoBehaviour
     {
         if (_gameOverEnabled)
         {
+            m_player.ChangeGameState(false);
             Cursor.visible = true;
             m_gameOverMenu.SetActive(true);
+            m_interface.SetActive(false);
+            _gameRunning = false;
+            _levelSpeed = 0f;
         }
     }
 
