@@ -56,7 +56,8 @@ public class PlayerMovement : MonoBehaviour
         if (!_removePlayerControl && _isGrounded&& _gameRunning && !m_runningSound.isPlaying)
         {
             m_runningSound.Play();
-        } else if(!_isGrounded&&m_runningSound.isPlaying)
+        } 
+        else if(!_isGrounded&&m_runningSound.isPlaying)
         {
             m_runningSound.Pause();
         }
