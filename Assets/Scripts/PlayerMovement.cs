@@ -43,8 +43,9 @@ public class PlayerMovement : MonoBehaviour
 
     [SerializeField] private BoxCollider        m_boxCollider;
 
-    [SerializeField] private AudioSource        m_runningSound;
+    [SerializeField] private AudioSource        m_runningSource;
 
+    [SerializeField] private List<AudioClip>    m_footSteplist;
     // Update is called once per frame
     void Update()
     {
@@ -53,14 +54,6 @@ public class PlayerMovement : MonoBehaviour
         CheckIfTouchingLimits();
       
         m_model.transform.position=m_model.transform.position + new Vector3(_playerHorizontalInput*Time.deltaTime*_playerHorizontalSpeed,_verticalVelocity* Time.deltaTime, 0);
-        if (!_removePlayerControl && _isGrounded&& _gameRunning && !m_runningSound.isPlaying)
-        {
-            m_runningSound.Play();
-        } 
-        else if(!_isGrounded&&m_runningSound.isPlaying)
-        {
-            m_runningSound.Pause();
-        }
     }
 
     private void CapturePlayerHorizontalInput()
@@ -134,12 +127,17 @@ public class PlayerMovement : MonoBehaviour
                 m_anim.SetTrigger("slideEnd");
                 _slidingCoroutine = null;
             }
-            else 
-            {
-                SoundManager.Instance.StopSound(3);
-            }
+
         }
 
+    }
+    public void PlayFootStep()
+    {
+        if (_isGrounded)
+        {
+            m_runningSource.PlayOneShot(m_footSteplist[Random.Range(0, m_footSteplist.Count)]);
+        }
+        
     }
 
     private void ChangeHitBoxSliding(bool isSliding)
@@ -163,11 +161,7 @@ public class PlayerMovement : MonoBehaviour
         _removePlayerControl = !running;
         if (running)
         {
-            m_runningSound.Play();
             m_anim.SetTrigger("Start");
-        } else
-        {
-            m_runningSound.Pause();
         }
         
     }
@@ -186,8 +180,7 @@ public class PlayerMovement : MonoBehaviour
         ChangeHitBoxSliding(false);
         StopCoroutine(_slidingCoroutine);
         _slidingCoroutine = null;
-        SoundManager.Instance.StopSound(3);
-        m_runningSound.Play();
+        SoundManager.Instance.StopSound();
     }
     IEnumerator PlayerHitCoroutine()
     {
@@ -196,7 +189,6 @@ public class PlayerMovement : MonoBehaviour
         _touchingLeft = _touchingRight = false;
         _verticalVelocity = _onHitVerticalSpeed;
         _isGrounded = false;
-        m_runningSound.Pause();
         m_anim.SetTrigger("playerHit");
         if (_slidingCoroutine!=null)
         {
@@ -213,7 +205,6 @@ public class PlayerMovement : MonoBehaviour
         StartCoroutine(SliderCooldown());
         SoundManager.Instance.PlaySound(3);
         ChangeHitBoxSliding(true);
-        m_runningSound.Pause();
         gameManager.PlayerSliding(_slideDuration);
         _removePlayerControl = true;
         m_anim.SetTrigger("slideStart");

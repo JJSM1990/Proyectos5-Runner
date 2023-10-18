@@ -34,11 +34,21 @@ public class SoundManager : MonoBehaviour
 
     public void PlaySound(int i)
     {
+        switch (i)
+        {
+            case 1:
+                m_effectSource.volume = 0.1f;
+                break;
+            default:
+                m_effectSource.volume = 0.5f;
+                break;
+        }
         m_effectSource.PlayOneShot(m_audios[i]);
     }
 
-    public void StopSound(int i)
+    public void StopSound()
     {
         m_effectSource.Stop();
+        UnityEngine.Debug.Log("StoppingSound");
     }
 }

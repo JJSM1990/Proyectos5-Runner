@@ -24,6 +24,7 @@ public class MonsterHandsBehaviour : MonoBehaviour
     [SerializeField] private float startLHPosition, startRHPosition, endLHPosition, endRHPosition;
 
 
+
     private void Update()
     {
         if (_gameStarted)
