@@ -145,6 +145,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_rigidbody: {fileID: 2579833474124526028}
   m_triggersSpawn: 0
+  _acornValue: 1
+  _acornValueOnLoss: 1
+  _noiseOnPickUp: 0
+  _noiseOnDestroy: 2
 --- !u!54 &2579833474124526028
 Rigidbody:
   m_ObjectHideFlags: 0

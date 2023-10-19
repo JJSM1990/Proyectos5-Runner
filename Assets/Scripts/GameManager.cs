@@ -26,12 +26,16 @@ public class GameManager : MonoBehaviour
     [SerializeField] public float                       _spawnCallTime;
     [SerializeField] private float                      _spawnExecutionTime;
 
-    [SerializeField] private AcornSpawner               _acornSpawner;
+    //Cuando el jugador toca un obstaculo, se resta el valor del daño del obstaculo * _obstacleMultiplier y se añade uno a _obstacleMultiplier.
+    //De esta manera 
+    private int                                         _obstacleMultiplier=1;
+
+    [SerializeField] private AcornSpawner               m_acornSpawner;
     [SerializeField] private MonsterHandsBehaviour      m_handsBehaviour;
     [SerializeField] private PlayerMovement             m_player;
     [SerializeField] private GameObject                 m_floorSpawner;
     [SerializeField] private GameObject                 m_floor;
-    [SerializeField] private GameObject                 _previousFloorPiece;
+    [SerializeField] private GameObject                 m_previousFloorPiece;
     [SerializeField] private CameraMovement             m_cameraMovement;
 
     [SerializeField] GameObject                         m_obstacleSpawnPoint;
@@ -41,7 +45,7 @@ public class GameManager : MonoBehaviour
 
     Vector3 startPosition;
 
-
+   
     private bool                                        _gameOverEnabled=false;
     private bool                                        _gameOver = false;
     //Variables para el UI
@@ -78,7 +82,7 @@ public class GameManager : MonoBehaviour
         Cursor.visible = false;
         _levelSpeed = _initialSpeed;
         m_handsBehaviour.StartMovement();
-        _acornSpawner.StartGame();
+        m_acornSpawner.StartGame();
         m_player.ChangeGameState(true);
         SoundManager.Instance.PlayBackgorundMusic();
         m_mainMenu.SetActive(false);
@@ -134,8 +138,8 @@ public class GameManager : MonoBehaviour
     {
         GameObject floorPiece=Instantiate(m_floor, m_floorSpawner.transform.position, m_floorSpawner.transform.rotation);
         floorPiece.GetComponent<MovingPiece>().GetStartSpeed(_levelSpeed);
-        floorPiece.transform.position = new Vector3(_previousFloorPiece.transform.position.x, _previousFloorPiece.transform.position.y, _previousFloorPiece.transform.position.z - 40);
-        _previousFloorPiece= floorPiece;
+        floorPiece.transform.position = new Vector3(m_previousFloorPiece.transform.position.x, m_previousFloorPiece.transform.position.y, m_previousFloorPiece.transform.position.z - 40);
+        m_previousFloorPiece= floorPiece;
     }
 
 
@@ -145,21 +149,21 @@ public class GameManager : MonoBehaviour
     }
 
     // Funciones para las bellotas
-    public void AcornPickUp()
+    public void AcornPickUp(float acornValue, int noiseIndex)
     {
         if(_gameRunning)
         {
-            _acornCounter++;
-            _speedCounter++;
-            SoundManager.Instance.PlaySound(0);
+            _acornCounter+= acornValue;
+            _speedCounter += acornValue;
+            SoundManager.Instance.PlaySound(noiseIndex);
             UpdateAcorns();
         }  
     }
 
-    public void AcornLost()
+    public void AcornLost(float acornLossValue, int noiseIndex)
     {
-        _acornCounter--;
-        _speedCounter-=2;
+        _speedCounter-= acornLossValue;
+        SoundManager.Instance.PlaySound(noiseIndex);
         UpdateAcorns();
     }
 
@@ -178,7 +182,8 @@ public class GameManager : MonoBehaviour
     // El mensaje se recibe desde PLayerHitBox
     public void PlayerHit(float timeLost)
     {
-        _speedCounter -= timeLost;
+        _speedCounter -= timeLost*_obstacleMultiplier;
+        _obstacleMultiplier++;
         SoundManager.Instance.PlaySound(2);
         UpdateAcorns();
     }

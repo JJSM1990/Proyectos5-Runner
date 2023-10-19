@@ -132,7 +132,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_rigidbody: {fileID: 6095484494318949662}
   m_triggersSpawn: 0
-  m_damage: 10
+  m_damage: 5
 --- !u!54 &6095484494318949662
 Rigidbody:
   m_ObjectHideFlags: 0
