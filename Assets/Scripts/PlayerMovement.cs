@@ -30,7 +30,8 @@ public class PlayerMovement : MonoBehaviour
     private Vector3                             _normalHitboxCenter = new Vector3(-0.06f, 1.38f, 0.24f);
     private Vector3                             _slidingHitboxSize = new Vector3(0.67f, 1.75f, 0.46f);
     private Vector3                             _slidingHitboxCenter = new Vector3(-0.06f, 0.9134351f, 0.24f);
-    
+    [SerializeField]  GameObject                m_slideReady;
+
     //Player inputs
     private float                               _playerHorizontalInput;
 
@@ -206,6 +207,7 @@ public class PlayerMovement : MonoBehaviour
     IEnumerator Sliding()
     {
         StartCoroutine(SliderCooldown());
+        m_slideReady.SetActive(false);
         SoundManager.Instance.PlaySound(3);
         ChangeHitBoxSliding(true);
         gameManager.PlayerSliding(_slideDuration);
@@ -222,6 +224,7 @@ public class PlayerMovement : MonoBehaviour
     {
         _slideReady = false;
         yield return new WaitForSeconds(_slideCooldown);
+        m_slideReady.SetActive(true);
         _slideReady = true;
     }
 }
